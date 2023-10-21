@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace books.Controllers;
 
 [ApiController]
-[Route("api/contacts")]
+[Route("api/books")]
 
 public class BooksController : ControllerBase
 {
@@ -62,6 +62,35 @@ public class BooksController : ControllerBase
         };
 
         return Ok(bookDto);
+    }
+
+    // POST api/books
+    [HttpPost]
+    public IActionResult CreateBook([FromBody] BookForCreationDto bookForCreationDto)
+    {
+
+
+        var maxId = _dataService.Books.Max(c => c.Id);
+
+        var book = new Book
+        {
+            Id = maxId + 1,
+            Author = bookForCreationDto.Author,
+            Title = bookForCreationDto.Title
+            
+        };
+
+        _dataService.Books.Add(book);
+
+        var bookDto = new BookDto
+        {
+            Id = book.Id,
+            Author = book.Author,
+            Title = book.Title
+            
+        };
+
+        return CreatedAtAction(nameof(GetBook), new { id = book.Id }, bookDto);
     }
 }
 
