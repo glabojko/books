@@ -92,5 +92,21 @@ public class BooksController : ControllerBase
 
         return CreatedAtAction(nameof(GetBook), new { id = book.Id }, bookDto);
     }
+
+    // DELETE api/books/{id}
+    [HttpDelete("{id:int}")]
+    public IActionResult DeleteBook(int id)
+    {
+        var book = _dataService.Books.SingleOrDefault(c => c.Id == id);
+
+        if (book is null)
+        {
+            return NotFound();
+        }
+
+        _dataService.Books.Remove(book);
+
+        return NoContent();
+    }
 }
 
