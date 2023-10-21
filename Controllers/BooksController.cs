@@ -93,6 +93,24 @@ public class BooksController : ControllerBase
         return CreatedAtAction(nameof(GetBook), new { id = book.Id }, bookDto);
     }
 
+    // PUT api/books/{id}
+    [HttpPut("{id:int}")]
+    public IActionResult UpdateBook(int id, [FromBody] BookForUpdateDto bookForUpdateDto)
+    {
+        var book = _dataService.Books.SingleOrDefault(c => c.Id == id);
+
+        if (book is null)
+        {
+            return NotFound();
+        }
+
+        book.Author = bookForUpdateDto.Author;
+        book.Title = bookForUpdateDto.Title;
+        
+
+        return NoContent();
+    }
+
     // DELETE api/books/{id}
     [HttpDelete("{id:int}")]
     public IActionResult DeleteBook(int id)
