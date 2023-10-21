@@ -18,6 +18,9 @@ public class BooksController : ControllerBase
     {
         _dataService = dataService;
     }
+
+    // GET api/books
+    // GET api/books?search=
     [HttpGet]
     public ActionResult<IEnumerable<BookDto>> GetBooks([FromQuery] string? search)
     {
@@ -37,6 +40,28 @@ public class BooksController : ControllerBase
         });
 
         return Ok(booksDto);
+    }
+
+    // GET api/books/1
+    [HttpGet("{id:int}")]
+    public ActionResult<BookDto> GetBook(int id)
+    {
+        var book = _dataService.Books.SingleOrDefault(c => c.Id == id);
+
+        if (book is null)
+        {
+            return NotFound();
+        }
+
+        var bookDto = new BookDto
+        {
+            Id = book.Id,
+            Title = book.Title,
+            Author = book.Author
+            
+        };
+
+        return Ok(bookDto);
     }
 }
 
