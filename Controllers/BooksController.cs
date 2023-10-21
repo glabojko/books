@@ -2,8 +2,7 @@
 using books.Infrastructure;
 using books.Domain;
 using books.DTOs;
-using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace books.Controllers;
 
@@ -68,7 +67,15 @@ public class BooksController : ControllerBase
     [HttpPost]
     public IActionResult CreateBook([FromBody] BookForCreationDto bookForCreationDto)
     {
+        if (bookForCreationDto.Author == bookForCreationDto.Title)
+        {
+            ModelState.AddModelError("wrongTitle", "Author and title cannot be the same.");
+        }
 
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
 
         var maxId = _dataService.Books.Max(c => c.Id);
 
@@ -123,6 +130,41 @@ public class BooksController : ControllerBase
         }
 
         _dataService.Books.Remove(book);
+
+        return NoContent();
+    }
+
+    // PATCH api/books/{id}
+    [HttpPatch("{id:int}")]
+    public IActionResult PartiallyUpdateBook(int id, [FromBody] JsonPatchDocument<BookForUpdateDto> patchDocument)
+    {
+        var book = _dataService.Books.SingleOrDefault(c => c.Id == id);
+
+        if (book is null)
+        {
+            return NotFound();
+        }
+
+        var bookToBePatched = new BookForUpdateDto()
+        {
+            Title = book.Title,
+            Author = book.Author
+        };
+
+        patchDocument.ApplyTo(bookToBePatched, ModelState);
+
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        if (!TryValidateModel(bookToBePatched))
+        {
+            return BadRequest(ModelState);
+        }
+
+        book.Title = bookToBePatched.Title;
+        book.Author = bookToBePatched.Author;
 
         return NoContent();
     }
